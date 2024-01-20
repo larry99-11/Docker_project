@@ -1,0 +1,32 @@
+Vagrant.configure("2") do |config|
+
+   
+    # VM resource config
+    common_vm_config = {
+      memory: "1024",
+      cpus: 1,
+      network: "private_network",
+      provision: "shell"
+    }
+  
+    # Define individual VMs with different operating systems and private IP addresses in a lisit
+    all_vms = [
+      { name: "vm01", os: "ubuntu/jammy64", ip: "192.168.56.20", provision_script: "docker_install.sh" }
+    ]
+  
+    # Loop through the VMs and apply configurations
+    all_vms.each do |vm|
+      config.vm.define vm[:name] do |node|
+        node.vm.box = vm[:os]
+        node.vm.network common_vm_config[:network], ip: vm[:ip]
+        node.vm.provider "virtualbox" do |vb|
+          vb.memory = common_vm_config[:memory]
+          vb.cpus = common_vm_config[:cpus]
+        end
+        node.vm.provision common_vm_config[:provision] do |provision|
+          provision.path = vm[:provision_script]
+        end
+      end
+    end
+  end
+  
